@@ -68,3 +68,31 @@ ej: (venv) $ ./manage.py runserver 192.168.1.117:8000
 ## Desarrollo
 
 Para el desarrollo de esta aplicación se deben utilizar _branchs_ que salgan desde `master` y luego realizar un _pull request_, para esto se debe subir al repositorio la _branch_ utilizada y luego crear un _pull request_ en la interfaz web de GitHub
+
+## Como crear Pull Request
+
+Para crear un pull request se debe trabajar en una rama alterna a _master_ con el comando:
+
+```
+$ git checkout -b nombre_rama
+```
+
+Se crea una nueva rama que va a salir desde la rama actual (`master`). En esta rama se deben realizar todos los cambios que se quieran y luego se deben añadir con el comando:
+
+```
+$ git add -A (-A sirve para añadir todo lo modificado)
+```
+
+Luego se debe commitear
+
+```
+$ git commit -a -m "Comentario del commit" (-a es para añadir todo y -m es para añadir comentario)
+```
+
+Una vez listos los cambios se debe subir la rama de trabajo con el comando:
+
+```
+$ git push origin nombre_rama
+```
+
+Luego de esto en la ventana principal del repositorio en el navegador, se habilitará una opción de generar un _pull request_
