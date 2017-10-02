@@ -14,6 +14,7 @@ class Empresa (models.Model):
 	ip = models.CharField(max_length=16)
 	puerto = models.CharField(max_length=6)
 
+	usuario = models.ForeignKey('Usuario')
 
 class Dispositivo(models.Model):
 	mac = models.CharField(max_length=18)
@@ -24,7 +25,9 @@ class Dispositivo(models.Model):
 class Tinket(models.Model):
 	fecha_emision = models.DateField()
 	fecha_expiracion = models.DateField()
+	fecha_utilizacion = models.DateField()
 	valido = models.BooleanField()
+	id_ticket = models.CharField(max_length=100)
 
 	usuario = models.ForeignKey('Usuario')
 	empresa = models.ForeignKey('Empresa')
