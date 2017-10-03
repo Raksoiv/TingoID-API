@@ -4,9 +4,8 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
 class Usuario(AbstractUser):
-	nombre = models.CharField(max_length = 200)
-	correo = models.EmailField()
-	password = models.CharField(max_length=200)
+	pass
+	
 
 
 class Empresa (models.Model):
@@ -17,7 +16,7 @@ class Empresa (models.Model):
 	usuario = models.ForeignKey('Usuario')
 
 class Dispositivo(models.Model):
-	mac = models.CharField(max_length=18)
+	android_id = models.CharField(max_length=18)
 
 	usuario=models.ForeignKey('Usuario')
 

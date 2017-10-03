@@ -5,6 +5,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
+from models import *
+
+from django.views.decorators.csrf import csrf_exempt
 
 import json
 
@@ -19,14 +22,42 @@ def handshaking(request):
 	return HttpResponse(json.dumps(response_data), content_type = "application/json")
 
 #verificar el login
+@csrf_exempt 
 def login(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-		user = authenticate(username=received_data['user'], password = received_data['pass'])
+		user_name = received_data['correo']
+		passw = received_data['pass']
+		user = authenticate(username=user_name, password = passw)
 		if user is not None:
-			return HttpResponse(json.dumps(True), content_type = "application/json")
+			return HttpResponse(json.dumps({'logged': True}), content_type = "application/json")
 		else:
-			return HttpResponse(json.dumps(False), content_type = "application/json")
+			return HttpResponse(json.dumps({'logged': False}), content_type = "application/json")
+
+#almacenar usuario
+@csrf_exempt 
+def almacenarUsuario(request):
+	if request.method == 'POST':
+		received_data = json.loads(request.body.decode('utf-8'))
+		nombre = received_data['nombre']
+		correo = received_data['correo']
+		password = received_data['pass']		
+		try: 
+			usuario = Usuario.objects.get(username = correo)
+			response_data = { 				
+					"mensaje": "Este usuario ya existe.",
+					"almacenado": False
+				} 		
+		except ObjectDoesNotExist:
+#To DO: mandarle un mail con sus datos
+			usuario = Usuario(first_name=nombre, username=correo, password=password)
+			usuario.save()
+			response_data = { 				
+					"mensaje": "Cuenta creada existosamente.",
+					"almacenado": True
+				} 
+		return HttpResponse(json.dumps(response_data), content_type = "application/json")
+
 
 #buscar las entradas que posee cierto usuario para una determinada empresa 
 @login_required   #pistola
@@ -94,28 +125,6 @@ def usarEntrada(request):
 #		if discount == True:
 #			Tinket.objects.filter(id=id_tinket).update(valido=False)
 
-#almacenar usuario
-@login_required  #app log
-def almacenarUsuario(request):
-	if request.method == 'POST':
-		received_data = json.loads(request.body.decode('utf-8'))
-		nombre = received_data['nombre']
-		correo = received_data['correo']
-		password = received_data['password']		
-		try: 
-			usuario = Usuario.objects.get(correo = correo)
-			response_data = { 				
-					"mensaje": "Este usuario ya existe.",
-					"almacenado": False
-				} 		
-		except ObjectDoesNotExist:
-#To DO: mandarle un mail con sus datos
-			Usuario(nombre=nombre,correo=correo,password=password)
-			response_data = { 				
-					"mensaje": "Cuenta creada existosamente.",
-					"almacenado": True
-				} 
-		return HttpResponse(json.dumps(response_data), content_type = "application/json")
 
 
 @login_required        #app
@@ -128,12 +137,21 @@ def entradasDisponibles(request):
 			response_data = { 				
 				"mensaje": "No hay entradas disponibles.",
 				"entradas": False					
-			} 
+			}
+		else:
+			response_data = []
+			for entrada in entradas:
+				response_data.append({
+					"id": entrada.id,
+					"fecha_emision": entrada.fecha_emision.isoformat(),
+					"fecha_utilizacion": entrada.fecha_utilizacion.isoformat(),
+					"fecha_expiracion": entrada.fecha_expiracion.isoformat(),
+					"valido": entrada.valido
+				})
+
 		return HttpResponse(json.dumps(response_data), content_type = "application/json")
 	
 		#parseo del query object para enviar en un json
-
-		return HttpResponse(json.dumps(response_data), content_type = "application/json")
 
 @login_required			#app
 def entradasUtilizadas(request):
@@ -149,8 +167,6 @@ def entradasUtilizadas(request):
 		return HttpResponse(json.dumps(response_data), content_type = "application/json")
 	
 		#parseo del query object para enviar en un json
-
-		return HttpResponse(json.dumps(response_data), content_type = "application/json")
 
 
 #obtener info ticket id ticket y nombre empresa 
@@ -171,6 +187,10 @@ def detalleEntrada(request):
 
 			response = request.post(url, send_data)
 			response_data = json.loads(response.text('utf-8')) #lo que me devuelve el oscar
+
+			tinket = Tinket(fecha_emision=response_data.fecha_emision,fecha_utilizacion=None,fecha_expiracion=response_data.fecha_expiracion,valido=response_data.valido,id_ticket=id_ticket,usuario=usuario,empresa=empresa.id)
+			tinket.save()
+			
 		except ObjectDoesNotExist:
 			response_data = { 
 				"mensaje": "Detalle entrada no disponible",
@@ -199,7 +219,9 @@ def almacenarTinket(request):
 			response = request.post(url, send_data)
 			response_data = json.loads(response.text('utf-8'))
 #TO DO: none funciona para fecha?
-			Tinket(fecha_emision=response_data.fecha_emision,fecha_utilizacion=None,fecha_expiracion=response_data.fecha_expiracion,valido=response_data.valido,id_ticket=id_ticket,usuario=usuario,empresa=empresa.id)
+			tinket = Tinket(fecha_emision=response_data.fecha_emision,fecha_utilizacion=None,fecha_expiracion=response_data.fecha_expiracion,valido=response_data.valido,id_ticket=id_ticket,usuario=usuario,empresa=empresa.id)
+			tinket.save()
+
 			response_data = { 
 				"mensaje": "Tinket almacenado exitosamente.",
 				"almacenar": True

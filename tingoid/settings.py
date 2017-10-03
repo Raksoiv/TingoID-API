@@ -25,7 +25,9 @@ SECRET_KEY = 'i-plwzcyi%1mz)z&dpq4)o)p08$^s4kzl_d4n15r5gthk0k$v6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '10.6.43.180'
+]
 
 
 # Application definition
@@ -76,11 +78,14 @@ WSGI_APPLICATION = 'tingoid.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'tingobd',
+        'USER': 'django',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators

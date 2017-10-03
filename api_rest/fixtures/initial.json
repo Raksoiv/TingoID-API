@@ -1,0 +1,55 @@
+[
+  {
+    "model": "api_rest.Empresa",
+    "fields": {
+      "id": 1,
+      "nombre": "casino",
+      "ip": "10.6.43.200",
+      "puerto":":8000",
+      "usuario": 1
+    }
+  },
+  {
+    "model": "api_rest.Usuario",
+    "fields": {
+      "id": 1,
+      "is_superuser": "f",
+      "is_staff": "f",
+      "is_active": "t",
+      "date_joined": "2017-10-03 18:12:47.114-03",
+      "last_name": "USM",
+      "first_name": "Casino",
+      "username": "casino",
+      "email": "casino@usm.cl",
+      "password":"vitacura"
+    }
+  },
+  {
+    "model": "api_rest.Usuario",
+    "fields": {
+      "id": 2,
+      "is_superuser": "f",
+      "is_staff": "f",
+      "is_active": "t",
+      "date_joined": "2017-10-03 18:12:47.114-03",
+      "last_name": "USM",
+      "first_name": "Casino",
+      "username": "kappa",
+      "email": "kappa@usm.cl",
+      "password":"vitacura"
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 1,
+      "fecha_emision": "2017-09-09",
+      "fecha_expiracion": "2017-12-12",
+      "fecha_utilizacion": "2017-12-12",
+      "valido": "t",
+      "id_ticket": 1,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  }
+]
