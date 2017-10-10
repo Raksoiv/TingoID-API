@@ -24,7 +24,7 @@ class Dispositivo(models.Model):
 class Tinket(models.Model):
 	fecha_emision = models.DateField()
 	fecha_expiracion = models.DateField()
-	fecha_utilizacion = models.DateField()
+	fecha_utilizacion = models.DateField(null=True)
 	valido = models.BooleanField()
 	id_ticket = models.CharField(max_length=100)
 

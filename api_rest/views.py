@@ -26,9 +26,10 @@ def handshaking(request):
 def login(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-		user_name = received_data['correo']
-		passw = received_data['pass']
-		user = authenticate(username=user_name, password = passw)
+		user_name = str(received_data['correo'])
+		passw = str(received_data['pass'])
+		print(user_name, passw)
+		user = Usuario.objects.filter(username=user_name, password=passw)
 		if user is not None:
 			return HttpResponse(json.dumps({'logged': True}), content_type = "application/json")
 		else:
@@ -81,7 +82,7 @@ def usarEntrada(request):
 					return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
 				send_data = { 
-					"id_entrada": entrada.id_ticket 
+					"id_ticket": entrada.id_ticket 
 				}
 				empresa = Empresa.objects.get(pk=empresa_id)
 				url = empresa.ip+empresa.puerto+'/'+empresa.nombre+'/discount'
@@ -113,64 +114,76 @@ def usarEntrada(request):
 				} 
 		return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
-#valida una entrada, la marca como valida, le tiene que avisar a la empresa que la use
-#la empresa me devuelve el id tinket y discount
-#falta consultarle a la empresa
-#@login_required
-#def validarEntrada(request):
-#	if request.method == 'POST':
-#		received_data = json.loads(request.body.decode('utf-8'))
-#		id_tinket = received_data['id_tinket']
-#		discount = received_data['discount']
-#		if discount == True:
-#			Tinket.objects.filter(id=id_tinket).update(valido=False)
-
-
-
-@login_required        #app
+#@login_required        #app
+@csrf_exempt 
 def entradasDisponibles(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-		usuario_id = received_data['usuario_id']
-		entradas = Tinket.objects.filter(usuario=usuario_id, valido=True)
-		if not entradas:
+		correo = received_data['correo']
+		try:
+			usuario = Usuario.objects.get(username=correo)
+			entradas = Tinket.objects.filter(usuario=usuario.id,valido=True)
+			if not entradas:
+				response_data = { 				
+					"mensaje": "No hay entradas disponibles.",
+					"entradas": False					
+				}
+			else:
+				response_data = []
+				for entrada in entradas:
+
+					response_data.append({
+						"id": entrada.id,
+						"fecha_emision": entrada.fecha_emision.isoformat(),
+						"fecha_utilizacion": entrada.fecha_utilizacion.isoformat(),
+						"fecha_expiracion": entrada.fecha_expiracion.isoformat(),
+						"valido": entrada.valido,
+						"empresa": entrada.empresa.nombre
+					})
+		except ObjectDoesNotExist:
 			response_data = { 				
-				"mensaje": "No hay entradas disponibles.",
+				"mensaje": "Usuario no identificado.",
 				"entradas": False					
 			}
-		else:
-			response_data = []
-			for entrada in entradas:
-				response_data.append({
-					"id": entrada.id,
-					"fecha_emision": entrada.fecha_emision.isoformat(),
-					"fecha_utilizacion": entrada.fecha_utilizacion.isoformat(),
-					"fecha_expiracion": entrada.fecha_expiracion.isoformat(),
-					"valido": entrada.valido
-				})
 
 		return HttpResponse(json.dumps(response_data), content_type = "application/json")
-	
-		#parseo del query object para enviar en un json
+		
 
-@login_required			#app
+@csrf_exempt		#app
 def entradasUtilizadas(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-		usuario_id = received_data['usuario_id']
-		entradas = Tinket.objects.filter(usuario=usuario_id, valido=False)
-		if not entradas:
-			response_data = { 				
-				"mensaje": "No has utilizado ninguna entrada.",
-				"entradas": False					
-			} 
-		return HttpResponse(json.dumps(response_data), content_type = "application/json")
-	
-		#parseo del query object para enviar en un json
+		correo = received_data['correo']
+		try:
+			usuario = Usuario.objects.get(username=correo)
+			entradas = Tinket.objects.filter(usuario=usuario.id,valido=False)
+			if not entradas:
+				response_data = { 				
+					"mensaje": "No hay entradas disponibles.",
+					"entradas": False					
+				}
+			else:
+				response_data = []
+				for entrada in entradas:
 
+					response_data.append({
+						"id": entrada.id,
+						"fecha_emision": entrada.fecha_emision.isoformat(),
+						"fecha_utilizacion": entrada.fecha_utilizacion.isoformat(),
+						"fecha_expiracion": entrada.fecha_expiracion.isoformat(),
+						"valido": entrada.valido,
+						"empresa": entrada.empresa.nombre
+					})
+		except ObjectDoesNotExist:
+			response_data = { 				
+				"mensaje": "Usuario no identificado.",
+				"entradas": False					
+			}
+
+		return HttpResponse(json.dumps(response_data), content_type = "application/json")
 
 #obtener info ticket id ticket y nombre empresa 
-@login_required 	#app 
+@csrf_exempt	#app 
 def detalleEntrada(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
@@ -183,14 +196,15 @@ def detalleEntrada(request):
 				"id_ticket": entrada.id_ticket 
 			}
 			empresa = Empresa.objects.get(nombre=empresa_nombre)
-			url = empresa.ip+empresa.puerto+'/'+empresa.nombre+'/check'
+			url = empresa.ip+':'+empresa.puerto+'/'+empresa.nombre+'/casino/detalle'
+
 
 			response = request.post(url, send_data)
 			response_data = json.loads(response.text('utf-8')) #lo que me devuelve el oscar
 
 			tinket = Tinket(fecha_emision=response_data.fecha_emision,fecha_utilizacion=None,fecha_expiracion=response_data.fecha_expiracion,valido=response_data.valido,id_ticket=id_ticket,usuario=usuario,empresa=empresa.id)
 			tinket.save()
-			
+
 		except ObjectDoesNotExist:
 			response_data = { 
 				"mensaje": "Detalle entrada no disponible",
@@ -202,7 +216,8 @@ def detalleEntrada(request):
 
 
 #almacenar tinket en base a: id registro fecha fecha_expiracionestado costo detalle empresa
-@login_required    #app
+#@login_required    #app
+@csrf_exempt 
 def almacenarTinket(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
@@ -214,7 +229,8 @@ def almacenarTinket(request):
 			}
 		try:
 			empresa = Empresa.objects.get(nombre=empresa_nombre)
-			url = empresa.ip+empresa.puerto+'/'+empresa.nombre+'/check'
+			url = empresa.ip+':'+empresa.puerto+'/'+empresa.nombre+'/casino/detalle'
+
 
 			response = request.post(url, send_data)
 			response_data = json.loads(response.text('utf-8'))
@@ -231,6 +247,7 @@ def almacenarTinket(request):
 				"mensaje": "La empresa no existe",
 				"almacenar": False
 			}
+		return HttpResponse(json.dumps(response_data), content_type = "application/json") #envio a la app
 
 
 
