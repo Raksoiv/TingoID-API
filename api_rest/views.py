@@ -29,7 +29,7 @@ def login(request):
 		received_data = json.loads(request.body.decode('utf-8'))
 		user_name = str(received_data['correo'])
 		passw = str(received_data['pass'])
-		print(user_name, passw)
+		
 		try: 
 			user = Usuario.objects.get(username=user_name, password=passw)
 			print(user)
@@ -141,6 +141,7 @@ def detalleEntrada(request):
 
 		try:
 			tinket_previo= Tinket.objects.get(id=id_tinket)
+			print("uno")
 			empresa_nombre= tinket_previo.empresa.nombre
 			if not tinket_previo:
 				response_data = { 
@@ -159,22 +160,33 @@ def detalleEntrada(request):
 			response_data = json.loads(response.text)		
 
 			#si existe, verifico si el estado continua siendo el mismo			
-			tinket_previo.valido=str(response_data['valido'])
-			tinket_previo.save()
+			
+			if str(response_data['encontrado'])=='True':
 
-			response_data = {
-				"id": tinket_previo.id,
-				"fecha_emision": tinket_previo.fecha_emision.isoformat(),
-				"fecha_utilizacion": tinket_previo.fecha_utilizacion.isoformat(),
-				"fecha_expiracion": tinket_previo.fecha_expiracion.isoformat(),
-				"valido": tinket_previo.valido,
-				"empresa": tinket_previo.empresa.nombre
+				tinket_previo.valido=str(response_data['valido'])
+				tinket_previo.save()
+
+				response_data = {
+					"id": tinket_previo.id,
+					"fecha_emision": tinket_previo.fecha_emision.isoformat(),
+					"fecha_utilizacion": tinket_previo.fecha_utilizacion.isoformat(),
+					"fecha_expiracion": tinket_previo.fecha_expiracion.isoformat(),
+					"valido": tinket_previo.valido,
+					"empresa": tinket_previo.empresa.nombre,
+					"tipo":str(response_data['tipo']),
+					"valor":str(response_data['valor'])
+
+					}
+			else:
+				response_data = { 
+				"mensaje": "Ticket no encontrado en la empresa.",
+				"detalle": False
 				}
 
 			
 		except ObjectDoesNotExist:
 			response_data = { 
-				"mensaje": "Detalle entrada no disponible",
+				"mensaje": "Detalle entrada no disponible.",
 				"detalle": False
 				}
 		return HttpResponse(json.dumps(response_data), content_type = "application/json") #envio a la app
@@ -202,24 +214,30 @@ def almacenarTinket(request):
 			response = requests.post(url, json.dumps(send_data))
 			response_data = json.loads(response.text)
 
+			if str(response_data['fecha_expiracion'])=='True':
 
-			tinket = Tinket(
-				fecha_emision=str(response_data['fecha_emision']),
-				fecha_utilizacion='2050-12-12',
-				fecha_expiracion=str(response_data['fecha_expiracion']),
-				valido=str(response_data['valido']),
-				id_ticket=id_ticket,
-				usuario=usuario,
-				empresa=empresa)
+				tinket = Tinket(
+					fecha_emision=str(response_data['fecha_emision']),
+					fecha_utilizacion='2050-12-12',
+					fecha_expiracion=str(response_data['fecha_expiracion']),
+					valido=str(response_data['valido']),
+					id_ticket=id_ticket,
+					usuario=usuario,
+					empresa=empresa)
 
-			#si existe no  lo almacena
-			aqui='dos'
-			tinket_previo= Tinket.objects.get(id_ticket=id_ticket, empresa=empresa)
-			
-			response_data = { 
-				"mensaje": "Tinket ya existente.",
-				"almacenar": False
-			}
+				#si existe no  lo almacena
+				aqui='dos'
+				tinket_previo= Tinket.objects.get(id_ticket=id_ticket, empresa=empresa)
+				
+				response_data = { 
+					"mensaje": "Tinket ya existente.",
+					"almacenar": False
+				}
+			else:
+				response_data = { 
+					"mensaje": "La empresa no posee ese ticket.",
+					"almacenar": False
+				}
 		except ObjectDoesNotExist:
 			print(aqui)
 
@@ -248,7 +266,7 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 			#repetir hasta encontrar una entrada valida
 			while not discount:
 				#obtener LA entrada mas cercana a vencer				
-				entrada = Tinket.objects.filter(usuario=usuario_id, empresa=empresa_id, valido=True).order_by('fecha_expiracion')[0]
+				entrada = Tinket.objects.filter(usuario=usuario_id, empresa=empresa_id, valido=True).order_by('fecha_expiracion').first()
 				if not entrada:
 					return_data = { 
 						"discount": False, 
@@ -269,21 +287,25 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 				response_data = json.loads(response.text)
 				discount = str(response_data['discount'])
 
-				
+				if str(response_data['encontrado'])=='True':
+					if discount == 'True':
+						entrada.valido= False
+						entrada.save()
 
-				if discount == True:
-					entrada.valido= False
-					entrada.save()
-
-					return_data = { 
-						"discount": True, 
-						"mensaje": "Entrada utilizada exitosamente."
-					}
+						return_data = { 
+							"discount": True, 
+							"mensaje": "Entrada utilizada exitosamente."
+						}
+					else:
+						return_data = { 
+							"discount": False, 
+							"mensaje": "2No posee entradas disponibles."
+						}
 				else:
 					return_data = { 
-						"discount": False, 
-						"mensaje": "No posees entradas disponibles."
-					}
+							"discount": False, 
+							"mensaje": str(response_data['error'])
+						}
 		except ObjectDoesNotExist:
 			return_data = { 
 					"discount": False, 				
