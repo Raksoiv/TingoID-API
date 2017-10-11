@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
 from models import *
+import requests
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -223,19 +224,25 @@ def almacenarTinket(request):
 		received_data = json.loads(request.body.decode('utf-8'))
 		id_ticket = received_data['id_ticket']
 		empresa_nombre = received_data['empresa']
-		usuario = received_data['usuario']
+		usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
 		send_data = { 
 				"id_ticket": id_ticket 
 			}
 		try:
 			empresa = Empresa.objects.get(nombre=empresa_nombre)
-			url = empresa.ip+':'+empresa.puerto+'/'+empresa.nombre+'/casino/detalle'
+			url = 'http://'+empresa.ip+':'+empresa.puerto+'/'+empresa.nombre+'/detalle'
 
+			response = requests.post(url, json.dumps(send_data))
+			response_data = json.loads(response.text)
 
-			response = request.post(url, send_data)
-			response_data = json.loads(response.text('utf-8'))
-#TO DO: none funciona para fecha?
-			tinket = Tinket(fecha_emision=response_data.fecha_emision,fecha_utilizacion=None,fecha_expiracion=response_data.fecha_expiracion,valido=response_data.valido,id_ticket=id_ticket,usuario=usuario,empresa=empresa.id)
+			tinket = Tinket(
+				fecha_emision=str(response_data['fecha_emision']),
+				fecha_utilizacion=None,
+				fecha_expiracion=str(response_data['fecha_expiracion']),
+				valido=str(response_data['valido']),
+				id_ticket=id_ticket,
+				usuario=usuario,
+				empresa=empresa)
 			tinket.save()
 
 			response_data = { 
