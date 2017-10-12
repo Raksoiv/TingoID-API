@@ -158,18 +158,5 @@
       "empresa_id": 1,
       "usuario_id": 3
     }
-  },
-  {
-    "model": "api_rest.Tinket",
-    "fields": {
-      "id": 6,
-      "fecha_emision": "2017-12-10",
-      "fecha_expiracion": "2017-09-12",
-      "fecha_utilizacion": "2050-12-12",
-      "valido": "f",
-      "id_ticket": 1,
-      "empresa_id": 2,
-      "usuario_id": 3
-    }
-  } 
+  }
 ]

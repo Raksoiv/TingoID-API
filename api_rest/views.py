@@ -43,6 +43,7 @@ def almacenarUsuario(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
 		nombre = received_data['nombre']
+		apellido = received_data['apellido']
 		correo = received_data['correo']
 		password = received_data['pass']		
 		try: 
@@ -53,7 +54,12 @@ def almacenarUsuario(request):
 				} 		
 		except ObjectDoesNotExist:
 #To DO: mandarle un mail con sus datos
-			usuario = Usuario(first_name=nombre, username=correo, password=password)
+			usuario = Usuario(
+				first_name=nombre, 
+				last_name=apellido, 
+				username=correo, 
+				password=password,
+				email=correo)
 			usuario.save()
 			response_data = { 				
 					"mensaje": "Cuenta creada existosamente.",
@@ -73,10 +79,7 @@ def entradasDisponibles(request):
 			usuario = Usuario.objects.get(username=correo)
 			entradas = Tinket.objects.filter(usuario=usuario.id,valido=True)
 			if not entradas:
-				response_data = { 				
-					"mensaje": "No hay entradas disponibles.",
-					"entradas": False					
-				}
+				response_data = []
 			else:
 				response_data = []
 				for entrada in entradas:
@@ -90,10 +93,7 @@ def entradasDisponibles(request):
 						"empresa": entrada.empresa.nombre#
 					})
 		except ObjectDoesNotExist:
-			response_data = { 				
-				"mensaje": "Usuario no identificado.",
-				"entradas": False					
-			}
+			response_data = []
 
 		return HttpResponse(json.dumps(response_data), content_type = "application/json")
 		
@@ -107,10 +107,7 @@ def entradasUtilizadas(request):
 			usuario = Usuario.objects.get(username=correo)
 			entradas = Tinket.objects.filter(usuario=usuario.id,valido=False)
 			if not entradas:
-				response_data = { 				
-					"mensaje": "No hay entradas disponibles.",
-					"entradas": False					
-				}
+				response_data = []
 			else:
 				response_data = []
 				for entrada in entradas:
@@ -124,10 +121,7 @@ def entradasUtilizadas(request):
 						"empresa": entrada.empresa.nombre
 					})
 		except ObjectDoesNotExist:
-			response_data = { 				
-				"mensaje": "Usuario no identificado.",
-				"entradas": False					
-			}
+			response_data = []
 
 		return HttpResponse(json.dumps(response_data), content_type = "application/json")
 
@@ -174,7 +168,8 @@ def detalleEntrada(request):
 					"valido": tinket_previo.valido,
 					"empresa": tinket_previo.empresa.nombre,
 					"tipo":str(response_data['tipo']),
-					"valor":str(response_data['valor'])
+					"valor":str(response_data['valor']),
+					"detalle":True
 
 					}
 			else:
@@ -199,7 +194,7 @@ def detalleEntrada(request):
 def almacenarTinket(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-		id_ticket = received_data['id_ticket']
+		id_ticket = received_data['id_tinket']
 		empresa_nombre = received_data['empresa']
 		usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
 		send_data = { 
@@ -254,8 +249,8 @@ def almacenarTinket(request):
 				}
 		return HttpResponse(json.dumps(response_data), content_type = "application/json") #envio a la app
 
-#buscar las entradas que posee cierto usuario para una determinada empresa 
-@csrf_exempt    #pistola
+####################################################################################################
+@csrf_exempt   
 def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana a vencer
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
@@ -299,7 +294,7 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 					else:
 						return_data = { 
 							"discount": False, 
-							"mensaje": "2No posee entradas disponibles."
+							"mensaje": "No posee entradas disponibles."
 						}
 				else:
 					return_data = { 
@@ -312,7 +307,5 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 					"mensaje": "No posees entradas disponibles."
 				} 
 		return HttpResponse(json.dumps(return_data), content_type = "application/json")
-
-
 
 
