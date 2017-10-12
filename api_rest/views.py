@@ -64,7 +64,7 @@ def almacenarUsuario(request):
 
 
 #@login_required        #app
-@csrf_exempt 
+@csrf_exempt   #si la fecha e expiracion es menor a la fecha actual
 def entradasDisponibles(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
@@ -82,12 +82,12 @@ def entradasDisponibles(request):
 				for entrada in entradas:
 
 					response_data.append({
-						"id": entrada.id,
+						"id": entrada.id,#
 						"fecha_emision": entrada.fecha_emision.isoformat(),
 						"fecha_utilizacion": entrada.fecha_utilizacion.isoformat(),
-						"fecha_expiracion": entrada.fecha_expiracion.isoformat(),
+						"fecha_expiracion": entrada.fecha_expiracion.isoformat(),#
 						"valido": entrada.valido,
-						"empresa": entrada.empresa.nombre
+						"empresa": entrada.empresa.nombre#
 					})
 		except ObjectDoesNotExist:
 			response_data = { 				
@@ -154,7 +154,7 @@ def detalleEntrada(request):
 			}
 
 			empresa = Empresa.objects.get(nombre=empresa_nombre)
-			url = 'http://'+empresa.ip+':'+empresa.puerto+'/'+empresa.nombre+'/detalle'
+			url = 'http://'+empresa.ip+empresa.puerto+'/'+empresa.nombre+'/detalle'
 
 			response = requests.post(url, json.dumps(send_data))
 			response_data = json.loads(response.text)		
@@ -209,12 +209,12 @@ def almacenarTinket(request):
 			print(empresa_nombre)
 			aqui='uno'
 			empresa = Empresa.objects.get(nombre=empresa_nombre)
-			url = 'http://'+empresa.ip+':'+empresa.puerto+'/'+empresa.nombre+'/detalle'
+			url = 'http://'+empresa.ip+empresa.puerto+'/'+empresa.nombre+'/detalle'
 
 			response = requests.post(url, json.dumps(send_data))
 			response_data = json.loads(response.text)
 
-			if str(response_data['fecha_expiracion'])=='True':
+			if str(response_data['encontrado'])=='True':
 
 				tinket = Tinket(
 					fecha_emision=str(response_data['fecha_emision']),
@@ -280,7 +280,7 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 				}
 
 				empresa = Empresa.objects.get(id=empresa_id)
-				url = 'http://'+empresa.ip+':'+empresa.puerto+'/'+empresa.nombre+'/discount'
+				url = 'http://'+empresa.ip+empresa.puerto+'/'+empresa.nombre+'/discount'
 
 				#Hacemos la consulta al servidor de la empresa
 				response = requests.post(url, json.dumps(send_data))

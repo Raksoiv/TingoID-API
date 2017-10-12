@@ -5,7 +5,17 @@
       "id": 1,
       "nombre": "casino",
       "ip": "10.6.43.200",
-      "puerto":":8000",
+      "puerto":":8001",
+      "usuario": 1
+    }
+  },
+  {
+    "model": "api_rest.Empresa",
+    "fields": {
+      "id": 2,
+      "nombre": "cine",
+      "ip": "10.6.43.200",
+      "puerto":":8002",
       "usuario": 1
     }
   },
@@ -19,7 +29,7 @@
       "date_joined": "2017-10-03 18:12:47.114-03",
       "last_name": "USM",
       "first_name": "Casino",
-      "username": "casino",
+      "username": "casino@usm.cl",
       "email": "casino@usm.cl",
       "password":"vitacura"
     }
@@ -32,24 +42,134 @@
       "is_staff": "f",
       "is_active": "t",
       "date_joined": "2017-10-03 18:12:47.114-03",
-      "last_name": "USM",
-      "first_name": "Casino",
-      "username": "kappa",
-      "email": "kappa@usm.cl",
-      "password":"vitacura"
+      "last_name": "Hoytts",
+      "first_name": "Cine",
+      "username": "cine@hoytts.cl",
+      "email": "cine@hoytts.cl",
+      "password":"cine"
+    }
+  },
+  {
+    "model": "api_rest.Usuario",
+    "fields": {
+      "id": 3,
+      "is_superuser": "f",
+      "is_staff": "f",
+      "is_active": "t",
+      "date_joined": "2017-10-03 18:12:47.114-03",
+      "last_name": "Soto",
+      "first_name": "Constanza",
+      "username": "constanza.soto.12@sansano.usm.cl",
+      "email": "constanza.soto.12@sansano.usm.cl",
+      "password":"coni123"
+    }
+  },
+  {
+    "model": "api_rest.Usuario",
+    "fields": {
+      "id": 4,
+      "is_superuser": "f",
+      "is_staff": "f",
+      "is_active": "t",
+      "date_joined": "2017-10-03 18:12:47.114-03",
+      "last_name": "Loayza",
+      "first_name": "Ignacio",
+      "username": "ignacio.1505@gmail.com",
+      "email": "ignacio.1505@gmail.com",
+      "password":"nacho123"
+    }
+  },
+  {
+    "model": "api_rest.Usuario",
+    "fields": {
+      "id": 5,
+      "is_superuser": "f",
+      "is_staff": "f",
+      "is_active": "t",
+      "date_joined": "2017-10-03 18:12:47.114-03",
+      "last_name": "ID",
+      "first_name": "Tingo",
+      "username": "pruebas@tingo.cl",
+      "email": "pruebas@tingo.cl",
+      "password":"tingoid"
     }
   },
   {
     "model": "api_rest.Tinket",
     "fields": {
       "id": 1,
-      "fecha_emision": "2017-09-09",
-      "fecha_expiracion": "2017-12-12",
-      "fecha_utilizacion": "2017-12-12",
+      "fecha_emision": "2017-01-08",
+      "fecha_expiracion": "2017-11-12",
+      "fecha_utilizacion": "2050-12-12",
       "valido": "t",
       "id_ticket": 1,
       "empresa_id": 1,
-      "usuario_id": 2
+      "usuario_id": 3
     }
-  }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 2,
+      "fecha_emision": "2017-02-10",
+      "fecha_expiracion": "2017-12-12",
+      "fecha_utilizacion": "2050-12-12",
+      "valido": "t",
+      "id_ticket": 2,
+      "empresa_id": 1,
+      "usuario_id": 3
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 3,
+      "fecha_emision": "2017-02-09",
+      "fecha_expiracion": "2017-05-12",
+      "fecha_utilizacion": "2050-12-12",
+      "valido": "t",
+      "id_ticket": 3,
+      "empresa_id": 1,
+      "usuario_id": 3
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 4,
+      "fecha_emision": "2017-04-07",
+      "fecha_expiracion": "2017-08-12",
+      "fecha_utilizacion": "2017-12-12",
+      "valido": "f",
+      "id_ticket": 4,
+      "empresa_id": 1,
+      "usuario_id": 3
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 5,
+      "fecha_emision": "2017-07-10",
+      "fecha_expiracion": "2017-09-12",
+      "fecha_utilizacion": "2050-12-12",
+      "valido": "f",
+      "id_ticket": 5,
+      "empresa_id": 1,
+      "usuario_id": 3
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 6,
+      "fecha_emision": "2017-12-10",
+      "fecha_expiracion": "2017-09-12",
+      "fecha_utilizacion": "2050-12-12",
+      "valido": "f",
+      "id_ticket": 1,
+      "empresa_id": 2,
+      "usuario_id": 3
+    }
+  } 
 ]
