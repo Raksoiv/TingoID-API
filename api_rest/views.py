@@ -468,54 +468,42 @@ def generarCodigo(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
 		id_avance = str(received_data['id_avance'])		
-		#usuario = str(received_data['usuario'])
 		try:	
-			#si el avance esta completado
-			existe = Avance.objects.filter(id=id_avance, valido=True).get()
-
+			existe = Avance.objects.filter(id=id
+			#si el avance esta completado_avance, valido=True).get()
 			if existe.promocion.disponible==True:#si la promo sigue disponible
 				#la empresa me entrega codigos
 				try:
-					
-					#usuario = Usuario.objects.filter(username=usuario).get()	
-
 					empresa = Empresa.objects.filter(id=existe.promocion.empresa.id).get()
 					send_data = { 
 						"id_promocion": str(existe.promocion.id) 
 						}
 					
-					url = 'http://'+empresa.ip+empresa.puerto+'/'+empresa.nombre+'/promociones/getcode'
+					url = 'http://'+empresa.ip+empresa.puerto+'/'+empresa.nombre+'/getcode'
 
 					response = requests.post(url, json.dumps(send_data))
 					response_data = json.loads(response.text)
-					#codigo = str(response_data['codigo_promocion'])
-					#print(str(response_data['encontrado']))
 					if str(response_data['encontrado'])=='True':
 						print(True)
 						return_data={
 								"codigo":str(response_data['codigo_promocion']),
 								"encontro":True
 							}
-
-
 				except ObjectDoesNotExist:
 					return_data={
 							"encontro":False
-						}
-				
+						}				
 		except ObjectDoesNotExist:
 			return_data={
 					"encontro":False
 				}
-
 		return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
 
 @csrf_exempt   
 def mostrarPromociones(request):
 	if request.method == 'POST':
-		received_data = json.loads(request.body.decode('utf-8'))
-		
+		received_data = json.loads(request.body.decode('utf-8'))		
 		try: 
 			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
 			#promociones que se estan siguiendo y no se han utilizado
@@ -550,7 +538,10 @@ def mostrarQR(request):
 			#viejo =  datetime.now() + timedelta(days=10)  
 			usuario.tiempo_qr = datetime.now() + timedelta(minutes=5)
 			usuario.save()
-			return_data={"tiempo":True}
+			return_data={
+				"tiempo":True,
+				"id": str(usuario.id)
+			}
 	
 		except ObjectDoesNotExist:
 			print('no existe el usuario')			
