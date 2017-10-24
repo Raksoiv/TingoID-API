@@ -5,8 +5,7 @@ from django.contrib.auth.models import AbstractUser
 
 class Usuario(AbstractUser):
 	pass
-	
-
+	tiempo_qr = models.DateField(null=True)
 
 class Empresa (models.Model):
 	nombre = models.CharField(max_length=200)
@@ -14,12 +13,6 @@ class Empresa (models.Model):
 	puerto = models.CharField(max_length=6)
 
 	usuario = models.ForeignKey('Usuario')
-
-class Dispositivo(models.Model):
-	android_id = models.CharField(max_length=18)
-
-	usuario=models.ForeignKey('Usuario')
-
 
 class Tinket(models.Model):
 	fecha_emision = models.DateField()
@@ -30,3 +23,22 @@ class Tinket(models.Model):
 
 	usuario = models.ForeignKey('Usuario')
 	empresa = models.ForeignKey('Empresa')
+
+class Promocion(models.Model):
+	promocion_id = models.CharField(max_length=100)
+	fecha_emision = models.DateField()
+	fecha_expiracion = models.DateField()
+	meta = models.CharField(max_length=100)
+	imagen = models.BinaryField(blank=True, null=True)
+	descripcion = models.CharField(max_length=500)
+	disponible = models.BooleanField()
+
+	empresa = models.ForeignKey('Empresa')
+
+class Avance(models.Model):
+	valido = models.BooleanField()
+	avance = models.CharField(max_length=100)
+	codigo = models.CharField(max_length=100, null=True)
+
+	usuario = models.ForeignKey('Usuario')
+	promocion = models.ForeignKey('Promocion')

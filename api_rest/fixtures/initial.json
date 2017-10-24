@@ -31,7 +31,8 @@
       "first_name": "Casino",
       "username": "casino@usm.cl",
       "email": "casino@usm.cl",
-      "password":"vitacura"
+      "password":"vitacura",
+      "tiempo_qr":"2000-12-12"
     }
   },
   {
@@ -46,7 +47,8 @@
       "first_name": "Cine",
       "username": "cine@hoytts.cl",
       "email": "cine@hoytts.cl",
-      "password":"cine"
+      "password":"cine",
+      "tiempo_qr":"2000-12-12"
     }
   },
   {
@@ -61,7 +63,8 @@
       "first_name": "Constanza",
       "username": "constanza.soto.12@sansano.usm.cl",
       "email": "constanza.soto.12@sansano.usm.cl",
-      "password":"coni123"
+      "password":"coni123",
+      "tiempo_qr":"2000-12-12"
     }
   },
   {
@@ -76,7 +79,8 @@
       "first_name": "Ignacio",
       "username": "ignacio.1505@gmail.com",
       "email": "ignacio.1505@gmail.com",
-      "password":"nacho123"
+      "password":"nacho123",
+      "tiempo_qr":"2000-12-12"
     }
   },
   {
@@ -91,7 +95,8 @@
       "first_name": "Tingo",
       "username": "pruebas@tingo.cl",
       "email": "pruebas@tingo.cl",
-      "password":"tingoid"
+      "password":"tingoid",
+      "tiempo_qr":"2000-12-12"
     }
   },
   {
