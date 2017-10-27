@@ -8,6 +8,7 @@ from datetime import datetime
 from models import *
 import requests
 import base64
+from django.utils import timezone
 from datetime import timedelta 
 from datetime import date
 import time
@@ -269,8 +270,12 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 		empresa_id = received_data['id_empresa']
 		discount = False
 		try: 
-			usuario = Usuario.objects.filter(id=id_usuario).get()
-			if usuario.tiempo_qr < datetime.now():
+			usuario = Usuario.objects.filter(id=usuario_id).get()
+			#ver que el QR no haya expirado
+			#fe=datetime.strptime(usuario.tiempo_qr, '%Y-%m-%d')
+			#print (usuario.tiempo_qr)
+			#print (datetime.now())						
+			if usuario.tiempo_qr > datetime.now(timezone.utc):
 				try:
 					#repetir hasta encontrar una entrada valida
 					while not discount:
@@ -300,6 +305,18 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 							if discount == 'True':
 								entrada.valido= False
 								entrada.save()
+								#suma puntos a los avances de las promociones disponibles de esa empresa
+								try:
+									promociones = Promocion.objects.filter(empresa=empresa,disponible=True)
+									for promocion in promociones:
+										avances = Avance.objects.filter(usuario=usuario,promocion=promocion)
+										for avance in avances:
+											avance.avance = str(int(avance.avance)+1)
+											avance.save()
+
+								except ObjectDoesNotExist:
+									print("no encontro la promocion")
+									continue
 
 								return_data = { 
 									"discount": True, 
@@ -329,8 +346,7 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 					return_data = { 
 							"discount": False, 				
 							"mensaje": "No se encontro el usuario."
-						} 
-		
+						} 		
 		return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
 
@@ -338,7 +354,7 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 
 ########################################### PROMOCIONES ########################
 @csrf_exempt   
-def promocionesExistentes(request):    #al apretar nuevas promociones
+def promocionesExistentes(request):    #almacena en la bd de tingo las promociones de la empresa si son nuevas o las actualiza
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))				
 		try:
@@ -370,34 +386,30 @@ def promocionesExistentes(request):    #al apretar nuevas promociones
 						print('nueva')
 						
 						print('esta disponible')
+						if dato['imagen'] == None:
+							mi_imagen = ''
+						else:
+							mi_imagen =base64.b64encode(dato['imagen'])
 						promocion = Promocion(
 							promocion_id = dato['promocion_id'],
 							fecha_emision = dato['fecha_emision'],
 							fecha_expiracion = dato['fecha_expiracion'],
 							meta = dato['meta'],
 							descripcion = dato['descripcion'],
-							imagen = base64.b64decode(dato['imagen']),
+							imagen = mi_imagen,#base64.b64decode(dato['imagen']),
 							disponible = disponible,
 							empresa = empresa
 							)
 						print (promocion)
 						promocion.save()
-			#no mostrar las promociones que ya sigue(?)####################################3
-			promociones = Promocion.objects.filter(disponible=True)
-			if not promociones:
-				return_data = []
-			else:
-				return_data = []
-				for promocion in promociones:
-					return_data.append({
-						"id":str(promocion.id), #id nuestro
-						"descripcion": promocion.descripcion,
-						"fecha_expiracion": promocion.fecha_expiracion.isoformat(),
-						"empresa": empresa.nombre
-					})
-		except ObjectDoesNotExist:			
-			return_data = []	
-
+			return_data = {
+				"actualizado":True
+			}
+			
+		except ObjectDoesNotExist:		
+			return_data = {
+				"actualizado":False
+			}	
 	return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
 
@@ -405,7 +417,8 @@ def promocionesExistentes(request):    #al apretar nuevas promociones
 def detallePromocion(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-		id_promocion = str(received_data['id'])
+		id_promocion = str(received_data['id_promocion'])
+		id_avance = str(received_data['id_avance'])
 		try:
 			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
 			promocion = Promocion.objects.filter(id=id_promocion).get()
@@ -413,17 +426,29 @@ def detallePromocion(request):
 				mi_imagen = ''
 			else:
 				mi_imagen =base64.b64encode(promocion.imagen)
+			#si el avance cumplido, puede mostrar boton de genrar codigo
+			try:
+				avance = Avance.objects.filter(id=id_avance).get()
+				if avance.avance >= promocion.meta:
+					generar_codigo = True
 
-			return_data = { 
-				"id":promocion.id,
-				"fecha_emision": promocion.fecha_emision.isoformat(),
-				"fecha_expiracion": promocion.fecha_expiracion.isoformat(),
-				"meta": str(promocion.meta),
-				"descripcion": promocion.descripcion,
-				"imagen": mi_imagen,
-				"empresa": promocion.empresa.nombre,
-				"encontrado":True
-				}
+				else:
+					generar_codigo = False
+
+				return_data = { 
+					"id_promocion":promocion.id,
+					"id_avance":id_avance,
+					"fecha_emision": promocion.fecha_emision.isoformat(),
+					"fecha_expiracion": promocion.fecha_expiracion.isoformat(),
+					"meta": str(promocion.meta),
+					"descripcion": promocion.descripcion,
+					"imagen": mi_imagen,
+					"empresa": promocion.empresa.nombre,
+					"encontrado":True,
+					"generar_codigo":generar_codigo
+					}
+			except ObjectDoesNotExist:
+				print("no encontro avance")
 		except ObjectDoesNotExist:
 			return_data = {
 				"encontrado":False
@@ -431,37 +456,52 @@ def detallePromocion(request):
 		return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
 @csrf_exempt   
-def seguirPromocion(request):
+def generarAvance(request): #me fijo que el usuario tenga una avance de TODAS las promociones de las empresas que tenga una entrada
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-		id_promocion_t = str(received_data['id'])
+		#id_promocion_t = str(received_data['id'])
 		try:
 			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
-			promocion = Promocion.objects.filter(id=id_promocion_t).get()
-			
-			try: #si sigue la cosa -> valido true igual usuario igual promo
-				guardado = Avance.objects.filter(valido=True, usuario=usuario, promocion=promocion).get()
-				return_data={
-					"mensaje":"Ya estas siguiendo esta promocion."
-				}
-			except ObjectDoesNotExist:
-				avance = Avance(
-					valido = True,
-					avance = "0",
-					codigo = None,
-					usuario = usuario,
-					promocion = promocion
-					)
-				avance.save()
-				return_data={
-					"mensaje":"Promocion seguida exitosamente."
-				}
-		except ObjectDoesNotExist:
-			return_data={
-					"mensaje":"No se encontro usuario o promocion"
-				}
-		return HttpResponse(json.dumps(return_data), content_type = "application/json")
+			#primero tengo que ver las empresas que tiene entradas el usuario			
+			tuplas_empresa = Tinket.objects.filter(usuario=usuario.id).order_by().values_list('empresa').distinct()
+			for tupla in tuplas_empresa:
+				#por cada empresa, ver las promociones disponibles
+				try:
+					empresa = Empresa.objects.filter(id=tupla[0]).get()
+					promociones = Promocion.objects.filter(disponible=True, empresa=empresa)
+					for promocion in promociones:
+						#por cada promocion disponible, ver que tenga su avance, si no lo tiene creo la instancia
+						try:
+							#si la encuentra  no hace nada
+							avance = Avance.objects.filter(usuario=usuario, promocion=promocion).get()
+							#si no esta, tiene que crearla
+						except ObjectDoesNotExist:
+							#si la meta de la promocion es 1, su avance es uno, de lo contrario es cero.
+							if promocion.meta == 1:
+								avance_inicial = "1"
+							else:
+								avance_inicial = "0"
 
+							avance = Avance(
+								valido = True,
+								avance = avance_inicial,
+								codigo = None,
+								usuario = usuario,
+								promocion = promocion
+							)
+							avance.save()
+				except ObjectDoesNotExist:
+					print ("no hay promociones o no encontro la empresa")
+					continue
+			return_data={
+				"actualizado":True
+			}
+		except ObjectDoesNotExist:
+			print("no encontro el usuario")
+			return_data={
+				"actualizado":False
+			}			
+		return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
 @csrf_exempt   
 def generarCodigo(request):
@@ -469,14 +509,17 @@ def generarCodigo(request):
 		received_data = json.loads(request.body.decode('utf-8'))
 		id_avance = str(received_data['id_avance'])		
 		try:	
-			existe = Avance.objects.filter(id=id
+			existe = Avance.objects.filter(id=id_avance).get()
 			#si el avance esta completado_avance, valido=True).get()
-			if existe.promocion.disponible==True:#si la promo sigue disponible
+			if (existe.promocion.disponible==True):#si la promo sigue disponible
 				#la empresa me entrega codigos
 				try:
 					empresa = Empresa.objects.filter(id=existe.promocion.empresa.id).get()
+					print(existe.promocion.promocion_id)
+					print(existe.id)
+					print(existe.promocion.id)
 					send_data = { 
-						"id_promocion": str(existe.promocion.id) 
+						"id_promocion": str(existe.promocion.promocion_id) 
 						}
 					
 					url = 'http://'+empresa.ip+empresa.puerto+'/'+empresa.nombre+'/getcode'
@@ -488,12 +531,14 @@ def generarCodigo(request):
 						return_data={
 								"codigo":str(response_data['codigo_promocion']),
 								"encontro":True
-							}
+							}					
 				except ObjectDoesNotExist:
+					print("no encontro empresa")
 					return_data={
 							"encontro":False
 						}				
 		except ObjectDoesNotExist:
+			print("no tiene avance")
 			return_data={
 					"encontro":False
 				}
@@ -514,7 +559,8 @@ def mostrarPromociones(request):
 				return_data = []
 				for avance in avances:					
 					return_data.append({
-							"id":str(avance.id), 
+							"id_avance":str(avance.id), 
+							"id_promocion":str(avance.promocion.id),
 							"descripcion": avance.promocion.descripcion,
 							"fecha_expiracion": avance.promocion.fecha_expiracion.isoformat(),
 							"empresa": avance.promocion.empresa.nombre,
@@ -536,11 +582,12 @@ def mostrarQR(request):
 		try: 
 			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
 			#viejo =  datetime.now() + timedelta(days=10)  
-			usuario.tiempo_qr = datetime.now() + timedelta(minutes=5)
+			usuario.tiempo_qr = datetime.now(timezone.utc) + timedelta(minutes=5)
 			usuario.save()
 			return_data={
 				"tiempo":True,
-				"id": str(usuario.id)
+				"id": str(usuario.id),
+				"tiempo max": str(usuario.tiempo_qr)
 			}
 	
 		except ObjectDoesNotExist:

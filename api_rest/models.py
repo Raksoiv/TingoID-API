@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 
 class Usuario(AbstractUser):
 	pass
-	tiempo_qr = models.DateField(null=True)
+	tiempo_qr = models.DateTimeField(null=True)
 
 class Empresa (models.Model):
 	nombre = models.CharField(max_length=200)
