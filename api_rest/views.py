@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
-from models import *
+from .models import *
 import requests
 import base64
 from django.utils import timezone
