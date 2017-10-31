@@ -26,9 +26,7 @@ SECRET_KEY = 'i-plwzcyi%1mz)z&dpq4)o)p08$^s4kzl_d4n15r5gthk0k$v6'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '192.168.0.16'
-    #'127.0.0.1',
-    #'localhost'
+	'tingoapi.lightdesign.cl'
 ]
 
 
@@ -81,9 +79,9 @@ WSGI_APPLICATION = 'tingoid.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tingobd',
-        'USER': 'django',
-        'PASSWORD': '',
+        'NAME': 'tingo',
+        'USER': 'tingouser',
+        'PASSWORD': 'tingo10nov',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -127,3 +125,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
