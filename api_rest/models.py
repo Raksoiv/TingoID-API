@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 class Usuario(AbstractUser):
 	pass
 	tiempo_qr = models.DateTimeField(null=True)
+	imagen = models.ImageField(blank=True, null=True)
 
 class Empresa (models.Model):
 	nombre = models.CharField(max_length=200)
@@ -20,6 +21,7 @@ class Tinket(models.Model):
 	fecha_utilizacion = models.DateField(null=True)
 	valido = models.BooleanField()
 	id_ticket = models.CharField(max_length=100)
+	tipo = models.CharField(max_length=100)
 
 	usuario = models.ForeignKey('Usuario')
 	empresa = models.ForeignKey('Empresa')
@@ -29,7 +31,7 @@ class Promocion(models.Model):
 	fecha_emision = models.DateField()
 	fecha_expiracion = models.DateField()
 	meta = models.CharField(max_length=100)
-	imagen = models.BinaryField(blank=True, null=True)
+	imagen = models.ImageField(blank=True, null=True)
 	descripcion = models.CharField(max_length=500)
 	disponible = models.BooleanField()
 

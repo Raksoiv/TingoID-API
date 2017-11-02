@@ -3,19 +3,9 @@
     "model": "api_rest.Empresa",
     "fields": {
       "id": 1,
-      "nombre": "casino",
+      "nombre": "Casino",
       "ip": "10.6.43.200",
       "puerto":":8001",
-      "usuario": 1
-    }
-  },
-  {
-    "model": "api_rest.Empresa",
-    "fields": {
-      "id": 2,
-      "nombre": "cine",
-      "ip": "10.6.43.200",
-      "puerto":":8002",
       "usuario": 1
     }
   },
@@ -32,7 +22,8 @@
       "username": "casino@usm.cl",
       "email": "casino@usm.cl",
       "password":"vitacura",
-      "tiempo_qr":"2000-12-12"
+      "tiempo_qr":"2000-12-12",
+      "imagen":"C:/Users/Constanza Soto/Desktop/Tingo/imagenes/empresa1.png"
     }
   },
   {
@@ -43,12 +34,13 @@
       "is_staff": "f",
       "is_active": "t",
       "date_joined": "2017-10-03 18:12:47.114-03",
-      "last_name": "Hoytts",
-      "first_name": "Cine",
-      "username": "cine@hoytts.cl",
-      "email": "cine@hoytts.cl",
-      "password":"cine",
-      "tiempo_qr":"2000-12-12"
+      "last_name": "Soto",
+      "first_name": "Constanza",
+      "username": "constanza.mitkha@gmail.cl",
+      "email": "constanza.mitkha@gmail.cl",
+      "password":"coni123",
+      "tiempo_qr":"2000-12-12",
+      "imagen":"C:/Users/Constanza Soto/Desktop/Tingo/imagenes/coni.jpg"
     }
   },
   {
@@ -59,44 +51,13 @@
       "is_staff": "f",
       "is_active": "t",
       "date_joined": "2017-10-03 18:12:47.114-03",
-      "last_name": "Soto",
-      "first_name": "Constanza",
-      "username": "constanza.soto.12@sansano.usm.cl",
-      "email": "constanza.soto.12@sansano.usm.cl",
-      "password":"coni123",
-      "tiempo_qr":"2000-12-12"
-    }
-  },
-  {
-    "model": "api_rest.Usuario",
-    "fields": {
-      "id": 4,
-      "is_superuser": "f",
-      "is_staff": "f",
-      "is_active": "t",
-      "date_joined": "2017-10-03 18:12:47.114-03",
-      "last_name": "Loayza",
+      "last_name": "Loyaza",
       "first_name": "Ignacio",
-      "username": "ignacio.1505@gmail.com",
-      "email": "ignacio.1505@gmail.com",
+      "username": "ignacio1505@gmail.com",
+      "email": "ignacio1505@gmail.com",
       "password":"nacho123",
-      "tiempo_qr":"2000-12-12"
-    }
-  },
-  {
-    "model": "api_rest.Usuario",
-    "fields": {
-      "id": 5,
-      "is_superuser": "f",
-      "is_staff": "f",
-      "is_active": "t",
-      "date_joined": "2017-10-03 18:12:47.114-03",
-      "last_name": "ID",
-      "first_name": "Tingo",
-      "username": "pruebas@tingo.cl",
-      "email": "pruebas@tingo.cl",
-      "password":"tingoid",
-      "tiempo_qr":"2000-12-12"
+      "tiempo_qr":"2000-12-12",
+      "imagen":"C:/Users/Constanza Soto/Desktop/Tingo/imagenes/nacho.jpg"
     }
   },
   {
@@ -104,12 +65,13 @@
     "fields": {
       "id": 1,
       "fecha_emision": "2017-01-08",
-      "fecha_expiracion": "2017-11-12",
+      "fecha_expiracion": "2017-12-01",
       "fecha_utilizacion": "2050-12-12",
+      "tipo": "Almuerzo Completo",
       "valido": "t",
       "id_ticket": 1,
       "empresa_id": 1,
-      "usuario_id": 3
+      "usuario_id": 2
     }
   },
   {
@@ -117,12 +79,13 @@
     "fields": {
       "id": 2,
       "fecha_emision": "2017-02-10",
-      "fecha_expiracion": "2017-12-12",
+      "fecha_expiracion": "2017-12-03",
       "fecha_utilizacion": "2050-12-12",
+      "tipo": "Almuerzo Simple",
       "valido": "t",
       "id_ticket": 2,
       "empresa_id": 1,
-      "usuario_id": 3
+      "usuario_id": 2
     }
   },
   {
@@ -130,12 +93,13 @@
     "fields": {
       "id": 3,
       "fecha_emision": "2017-02-09",
-      "fecha_expiracion": "2017-05-12",
+      "fecha_expiracion": "2017-12-07",
       "fecha_utilizacion": "2050-12-12",
+      "tipo": "Colacion",
       "valido": "t",
       "id_ticket": 3,
       "empresa_id": 1,
-      "usuario_id": 3
+      "usuario_id": 2
     }
   },
   {
@@ -143,12 +107,13 @@
     "fields": {
       "id": 4,
       "fecha_emision": "2017-04-07",
-      "fecha_expiracion": "2017-08-12",
+      "fecha_expiracion": "2017-11-18",
       "fecha_utilizacion": "2017-12-12",
-      "valido": "f",
+      "tipo":"Colacion",
+      "valido": "t",
       "id_ticket": 4,
       "empresa_id": 1,
-      "usuario_id": 3
+      "usuario_id": 2
     }
   },
   {
@@ -156,12 +121,307 @@
     "fields": {
       "id": 5,
       "fecha_emision": "2017-07-10",
-      "fecha_expiracion": "2017-09-12",
+      "fecha_expiracion": "2017-12-23",
       "fecha_utilizacion": "2050-12-12",
-      "valido": "f",
+      "tipo":"Almuerzo Simple",
+      "valido": "t",
       "id_ticket": 5,
       "empresa_id": 1,
-      "usuario_id": 3
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 6,
+      "fecha_emision": "2017-03-11",
+      "fecha_expiracion": "2017-12-13",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Completo",
+      "valido": "t",
+      "id_ticket": 6,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 7,
+      "fecha_emision": "2017-05-22",
+      "fecha_expiracion": "2017-11-23",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Colacion",
+      "valido": "t",
+      "id_ticket": 7,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 8,
+      "fecha_emision": "2017-09-10",
+      "fecha_expiracion": "2017-12-06",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Colacion",
+      "valido": "t",
+      "id_ticket": 8,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 9,
+      "fecha_emision": "2017-01-17",
+      "fecha_expiracion": "2018-01-15",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Colacion",
+      "valido": "t",
+      "id_ticket": 9,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 10,
+      "fecha_emision": "2017-06-15",
+      "fecha_expiracion": "2017-12-29",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Completo",
+      "valido": "t",
+      "id_ticket": 10,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 11,
+      "fecha_emision": "2017-03-01",
+      "fecha_expiracion": "2018-01-13",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Simple",
+      "valido": "t",
+      "id_ticket": 11,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 12,
+      "fecha_emision": "2017-10-15",
+      "fecha_expiracion": "2018-01-20",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Colacion",
+      "valido": "t",
+      "id_ticket": 12,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 13,
+      "fecha_emision": "2017-09-13",
+      "fecha_expiracion": "2018-03-01",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Simple",
+      "valido": "t",
+      "id_ticket": 13,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 14,
+      "fecha_emision": "2017-08-11",
+      "fecha_expiracion": "2017-12-10",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Completo",
+      "valido": "t",
+      "id_ticket": 14,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 15,
+      "fecha_emision": "2017-03-07",
+      "fecha_expiracion": "2017-12-17",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Completo",
+      "valido": "t",
+      "id_ticket": 15,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 20,
+      "fecha_emision": "2017-03-12",
+      "fecha_expiracion": "2017-10-03",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Colacion",
+      "valido": "f",
+      "id_ticket": 20,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 21,
+      "fecha_emision": "2017-08-06",
+      "fecha_expiracion": "2017-10-19",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Completo",
+      "valido": "f",
+      "id_ticket": 21,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 22,
+      "fecha_emision": "2017-01-22",
+      "fecha_expiracion": "2017-09-01",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Simple",
+      "valido": "f",
+      "id_ticket": 22,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 23,
+      "fecha_emision": "2017-04-20",
+      "fecha_expiracion": "2017-10-13",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Colacion",
+      "valido": "t",
+      "id_ticket": 23,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 24,
+      "fecha_emision": "2017-09-23",
+      "fecha_expiracion": "2017-10-16",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Simple",
+      "valido": "t",
+      "id_ticket": 24,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 25,
+      "fecha_emision": "2017-02-01",
+      "fecha_expiracion": "2017-08-17",
+      "fecha_utilizacion": "2050-12-12",
+      "tipo":"Almuerzo Completo",
+      "valido": "t",
+      "id_ticket": 25,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 26,
+      "fecha_emision": "2017-04-17",
+      "fecha_expiracion": "2017-12-01",
+      "fecha_utilizacion": "2017-10-12",
+      "tipo":"Colacion",
+      "valido": "f",
+      "id_ticket": 26,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 27,
+      "fecha_emision": "2017-08-10",
+      "fecha_expiracion": "2017-12-04",
+      "fecha_utilizacion": "2017-10-08",
+      "tipo":"Almuerzo Simple",
+      "valido": "f",
+      "id_ticket": 27,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 28,
+      "fecha_emision": "2017-09-17",
+      "fecha_expiracion": "2017-12-22",
+      "fecha_utilizacion": "2017-10-07",
+      "tipo":"Colacion",
+      "valido": "f",
+      "id_ticket": 28,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 29,
+      "fecha_emision": "2017-09-12",
+      "fecha_expiracion": "2017-12-09",
+      "fecha_utilizacion": "2050-10-05",
+      "tipo":"Almuerzo Completo",
+      "valido": "f",
+      "id_ticket": 29,
+      "empresa_id": 1,
+      "usuario_id": 2
+    }
+  },
+  {
+    "model": "api_rest.Tinket",
+    "fields": {
+      "id": 30,
+      "fecha_emision": "2017-07-21",
+      "fecha_expiracion": "2017-12-21",
+      "fecha_utilizacion": "2050-10-27",
+      "tipo":"Colacion",
+      "valido": "f",
+      "id_ticket": 30,
+      "empresa_id": 1,
+      "usuario_id": 2
     }
   }
 ]

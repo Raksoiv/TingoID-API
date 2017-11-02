@@ -19,6 +19,27 @@ import json
 
 # Create your views here.
 
+def espanol(fecha):
+	dia = fecha.strftime('%d')
+	ano = fecha.strftime('%Y')
+	mes = fecha.strftime('%m')
+	switcher = {
+		1:" Ene. ",
+		2:" Feb. ",
+		3:" Mar. ",
+		4:" Abr. ",
+		5:" May. ",
+		6:" Jun. ",
+		7:" Jul. ",
+		8:" Ago. ",
+		9:" Sep. ",
+		10:" Oct. ",
+		11:" Nov. ",
+		12:" Dic. ",
+		} 
+	return dia+switcher.get(int(mes),"mes")+ano
+
+######################################################
 #pedir el token para conversar entre app y servidor
 def handshaking(request):
 	response_data = {
@@ -90,20 +111,29 @@ def entradasDisponibles(request):
 		correo = received_data['correo']
 		try:
 			usuario = Usuario.objects.get(username=correo)
-			entradas = Tinket.objects.filter(usuario=usuario.id,valido=True)
+			entradas = Tinket.objects.filter(usuario=usuario.id,valido=True).order_by('fecha_expiracion')
+			
 			if not entradas:
 				response_data = []
 			else:
 				response_data = []
 				for entrada in entradas:
-					response_data.append({
-						"id": entrada.id,
-						"fecha_emision": entrada.fecha_emision.isoformat(),
-						"fecha_utilizacion": entrada.fecha_utilizacion.isoformat(),
-						"fecha_expiracion": entrada.fecha_expiracion.isoformat(),#
-						"valido": entrada.valido,
-						"empresa": entrada.empresa.nombre#
-					})
+					
+					#actualizo las que esten vencidas
+					if entrada.fecha_expiracion < date.today():
+						entrada.valido = False
+						entrada.save()
+					#devuelvo las que no esten vencidas y valido=true
+					else:
+						response_data.append({
+							"id": entrada.id,
+							"fecha_emision": espanol(entrada.fecha_emision),
+							"fecha_utilizacion": espanol(entrada.fecha_utilizacion),
+							"fecha_expiracion": espanol(entrada.fecha_expiracion),
+							"valido": entrada.valido,
+							"empresa": entrada.empresa.nombre,
+							"tipo": entrada.tipo
+						})
 		except ObjectDoesNotExist:
 			response_data = []
 
@@ -117,20 +147,20 @@ def entradasUtilizadas(request):
 		correo = received_data['correo']
 		try:
 			usuario = Usuario.objects.get(username=correo)
-			entradas = Tinket.objects.filter(usuario=usuario.id,valido=False)
+			entradas = Tinket.objects.filter(usuario=usuario.id,valido=False).order_by('fecha_utilizacion')
 			if not entradas:
 				response_data = []
 			else:
 				response_data = []
 				for entrada in entradas:
-
 					response_data.append({
 						"id": entrada.id,
-						"fecha_emision": entrada.fecha_emision.isoformat(),
-						"fecha_utilizacion": entrada.fecha_utilizacion.isoformat(),
-						"fecha_expiracion": entrada.fecha_expiracion.isoformat(),
+						"fecha_emision": entrada.fecha_emision.strftime('%d %b. %Y'),
+						"fecha_utilizacion": entrada.fecha_utilizacion.strftime('%d %b. %Y'),
+						"fecha_expiracion": entrada.fecha_expiracion.strftime('%d %b. %Y'),
 						"valido": entrada.valido,
-						"empresa": entrada.empresa.nombre
+						"empresa": entrada.empresa.nombre,
+						"tipo": entrada.tipo
 					})
 		except ObjectDoesNotExist:
 			response_data = []
@@ -174,15 +204,14 @@ def detalleEntrada(request):
 
 				response_data = {
 					"id": tinket_previo.id,
-					"fecha_emision": tinket_previo.fecha_emision.isoformat(),
-					"fecha_utilizacion": tinket_previo.fecha_utilizacion.isoformat(),
-					"fecha_expiracion": tinket_previo.fecha_expiracion.isoformat(),
+					"fecha_emision": espanol(tinket_previo.fecha_emision),
+					"fecha_utilizacion": espanol(tinket_previo.fecha_utilizacion),
+					"fecha_expiracion": espanol(tinket_previo.fecha_expiracion),
 					"valido": tinket_previo.valido,
 					"empresa": tinket_previo.empresa.nombre,
 					"tipo":str(response_data['tipo']),
 					"valor":str(response_data['valor']),
 					"detalle":True
-
 					}
 			else:
 				response_data = { 
@@ -230,7 +259,9 @@ def almacenarTinket(request):
 					valido=str(response_data['valido']),
 					id_ticket=id_ticket,
 					usuario=usuario,
-					empresa=empresa)
+					empresa=empresa,
+					tipo=str(response_data['tipo'])
+					)
 
 				#si existe no  lo almacena
 				aqui='dos'
@@ -261,6 +292,7 @@ def almacenarTinket(request):
 				}
 		return HttpResponse(json.dumps(response_data), content_type = "application/json") #envio a la app
 
+################################### PISTOLA #########################################
 
 @csrf_exempt   
 def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana a vencer
@@ -303,16 +335,21 @@ def usarEntrada(request):   ##logica para el casino, usar la entrada mas cercana
 
 						if str(response_data['encontrado'])=='True':
 							if discount == 'True':
+								print("usa entrada")
+								print(entrada.id)
 								entrada.valido= False
+								entrada.fecha_utilizacion = date.today()
 								entrada.save()
 								#suma puntos a los avances de las promociones disponibles de esa empresa
 								try:
 									promociones = Promocion.objects.filter(empresa=empresa,disponible=True)
 									for promocion in promociones:
-										avances = Avance.objects.filter(usuario=usuario,promocion=promocion)
+										avances = Avance.objects.filter(usuario=usuario,promocion=promocion,valido=True)
+
 										for avance in avances:
-											avance.avance = str(int(avance.avance)+1)
-											avance.save()
+											if avance.promocion.meta > avance.avance:						
+												avance.avance = str(int(avance.avance)+1)
+												avance.save()
 
 								except ObjectDoesNotExist:
 									print("no encontro la promocion")
@@ -358,7 +395,7 @@ def promocionesExistentes(request):    #almacena en la bd de tingo las promocion
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))				
 		try:
-			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()	
+			usuario = Usuario.objects.filter(username=str(received_data['correo'])).get()	
 
 			empresas = Empresa.objects.filter()
 			send_data = { 
@@ -382,25 +419,20 @@ def promocionesExistentes(request):    #almacena en la bd de tingo las promocion
 						guardado.save()
 
 					except ObjectDoesNotExist: #si la promocion es nueva, la almaceno
-
-						print('nueva')
-						
-						print('esta disponible')
-						if dato['imagen'] == None:
-							mi_imagen = ''
-						else:
-							mi_imagen =base64.b64encode(dato['imagen'])
+						#if dato['imagen'] == None:
+						#	mi_imagen = ''
+						#else:
+						#	mi_imagen =base64.b64encode(dato['imagen'])
 						promocion = Promocion(
 							promocion_id = dato['promocion_id'],
 							fecha_emision = dato['fecha_emision'],
 							fecha_expiracion = dato['fecha_expiracion'],
 							meta = dato['meta'],
 							descripcion = dato['descripcion'],
-							imagen = mi_imagen,#base64.b64decode(dato['imagen']),
+						#	imagen = mi_imagen,#base64.b64decode(dato['imagen']),
 							disponible = disponible,
 							empresa = empresa
 							)
-						print (promocion)
 						promocion.save()
 			return_data = {
 				"actualizado":True
@@ -414,54 +446,11 @@ def promocionesExistentes(request):    #almacena en la bd de tingo las promocion
 
 
 @csrf_exempt   
-def detallePromocion(request):
-	if request.method == 'POST':
-		received_data = json.loads(request.body.decode('utf-8'))
-		id_promocion = str(received_data['id_promocion'])
-		id_avance = str(received_data['id_avance'])
-		try:
-			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
-			promocion = Promocion.objects.filter(id=id_promocion).get()
-			if promocion.imagen == None:
-				mi_imagen = ''
-			else:
-				mi_imagen =base64.b64encode(promocion.imagen)
-			#si el avance cumplido, puede mostrar boton de genrar codigo
-			try:
-				avance = Avance.objects.filter(id=id_avance).get()
-				if avance.avance >= promocion.meta:
-					generar_codigo = True
-
-				else:
-					generar_codigo = False
-
-				return_data = { 
-					"id_promocion":promocion.id,
-					"id_avance":id_avance,
-					"fecha_emision": promocion.fecha_emision.isoformat(),
-					"fecha_expiracion": promocion.fecha_expiracion.isoformat(),
-					"meta": str(promocion.meta),
-					"descripcion": promocion.descripcion,
-					"imagen": mi_imagen,
-					"empresa": promocion.empresa.nombre,
-					"encontrado":True,
-					"generar_codigo":generar_codigo
-					}
-			except ObjectDoesNotExist:
-				print("no encontro avance")
-		except ObjectDoesNotExist:
-			return_data = {
-				"encontrado":False
-			}
-		return HttpResponse(json.dumps(return_data), content_type = "application/json")
-
-@csrf_exempt   
 def generarAvance(request): #me fijo que el usuario tenga una avance de TODAS las promociones de las empresas que tenga una entrada
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-		#id_promocion_t = str(received_data['id'])
 		try:
-			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
+			usuario = Usuario.objects.filter(username=str(received_data['correo'])).get()
 			#primero tengo que ver las empresas que tiene entradas el usuario			
 			tuplas_empresa = Tinket.objects.filter(usuario=usuario.id).order_by().values_list('empresa').distinct()
 			for tupla in tuplas_empresa:
@@ -473,15 +462,18 @@ def generarAvance(request): #me fijo que el usuario tenga una avance de TODAS la
 						#por cada promocion disponible, ver que tenga su avance, si no lo tiene creo la instancia
 						try:
 							#si la encuentra  no hace nada
-							avance = Avance.objects.filter(usuario=usuario, promocion=promocion).get()
+							avance = Avance.objects.filter(usuario=usuario, promocion=promocion, valido=True).get()
 							#si no esta, tiene que crearla
 						except ObjectDoesNotExist:
 							#si la meta de la promocion es 1, su avance es uno, de lo contrario es cero.
-							if promocion.meta == 1:
+							print('###########################')
+							print(promocion.id)
+							print(promocion.meta)
+							if promocion.meta == "1":
 								avance_inicial = "1"
 							else:
 								avance_inicial = "0"
-
+							print(avance_inicial)
 							avance = Avance(
 								valido = True,
 								avance = avance_inicial,
@@ -503,6 +495,80 @@ def generarAvance(request): #me fijo que el usuario tenga una avance de TODAS la
 			}			
 		return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
+
+@csrf_exempt   
+def mostrarPromociones(request):
+	if request.method == 'POST':
+		received_data = json.loads(request.body.decode('utf-8'))		
+		try: 
+			usuario = Usuario.objects.filter(username=str(received_data['correo'])).get()
+			#promociones que se estan siguiendo y no se han utilizado
+			avances = Avance.objects.filter(usuario=usuario,valido=True) ##########enviar por empresa
+			if not avances:
+				return_data = []
+			else:
+				return_data = []
+				for avance in avances:
+					return_data.append({
+							"id_avance":str(avance.id), 
+							"id_promocion":str(avance.promocion.id),
+							"descripcion": avance.promocion.descripcion,
+							"fecha_expiracion": espanol(avance.promocion.fecha_expiracion),
+							"empresa": avance.promocion.empresa.nombre,
+							"avance": str(avance.avance),
+							"meta": str(avance.promocion.meta)
+						})
+		except ObjectDoesNotExist:
+			return_data = []
+		return HttpResponse(json.dumps(return_data), content_type = "application/json")
+
+
+@csrf_exempt   
+def detallePromocion(request):
+	if request.method == 'POST':
+		received_data = json.loads(request.body.decode('utf-8'))
+		id_promocion = str(received_data['id_promocion'])
+		id_avance = str(received_data['id_avance'])
+		try:
+			usuario = Usuario.objects.filter(username=str(received_data['correo'])).get()
+			promocion = Promocion.objects.filter(id=id_promocion).get()
+			#if promocion.imagen == None:
+			#	mi_imagen = ''
+			#else:
+			#	mi_imagen =base64.b64encode(promocion.imagen)
+			#si el avance cumplido, puede mostrar boton de genrar codigo
+			try:
+				avance = Avance.objects.filter(id=id_avance).get()
+				if avance.avance >= promocion.meta:
+					generar_codigo = True
+
+				else:
+					generar_codigo = False
+
+				return_data = { 
+					"id_promocion":promocion.id,
+					"id_avance":id_avance,
+					"fecha_emision": espanol(promocion.fecha_emision),
+					"fecha_expiracion": espanol(promocion.fecha_expiracion),
+					"meta": str(promocion.meta),
+					"avance":str(avance.avance),
+					"descripcion": promocion.descripcion,
+					#"imagen": mi_imagen,
+					"empresa": promocion.empresa.nombre,
+					"encontrado":True,
+					"generar_codigo":generar_codigo
+					}
+			except ObjectDoesNotExist:
+				return_data = {
+					"encontrado":False
+				}
+				print("no encontro avance")
+		except ObjectDoesNotExist:
+			return_data = {
+				"encontrado":False
+			}
+		return HttpResponse(json.dumps(return_data), content_type = "application/json")
+
 @csrf_exempt   
 def generarCodigo(request):
 	if request.method == 'POST':
@@ -515,9 +581,6 @@ def generarCodigo(request):
 				#la empresa me entrega codigos
 				try:
 					empresa = Empresa.objects.filter(id=existe.promocion.empresa.id).get()
-					print(existe.promocion.promocion_id)
-					print(existe.id)
-					print(existe.promocion.id)
 					send_data = { 
 						"id_promocion": str(existe.promocion.promocion_id) 
 						}
@@ -527,9 +590,11 @@ def generarCodigo(request):
 					response = requests.post(url, json.dumps(send_data))
 					response_data = json.loads(response.text)
 					if str(response_data['encontrado'])=='True':
-						print(True)
+						existe.codigo=str(response_data['codigo_promocion'])
+						existe.valido=False
+						existe.save()
 						return_data={
-								"codigo":str(response_data['codigo_promocion']),
+								"codigo":str(existe.codigo),
 								"encontro":True
 							}					
 				except ObjectDoesNotExist:
@@ -545,31 +610,6 @@ def generarCodigo(request):
 		return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
 
-@csrf_exempt   
-def mostrarPromociones(request):
-	if request.method == 'POST':
-		received_data = json.loads(request.body.decode('utf-8'))		
-		try: 
-			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
-			#promociones que se estan siguiendo y no se han utilizado
-			avances = Avance.objects.filter(usuario=usuario,valido=True)
-			if not avances:
-				return_data = []
-			else:
-				return_data = []
-				for avance in avances:					
-					return_data.append({
-							"id_avance":str(avance.id), 
-							"id_promocion":str(avance.promocion.id),
-							"descripcion": avance.promocion.descripcion,
-							"fecha_expiracion": avance.promocion.fecha_expiracion.isoformat(),
-							"empresa": avance.promocion.empresa.nombre,
-							"avance": str(avance.avance),
-							"meta": str(avance.promocion.meta)
-						})
-		except ObjectDoesNotExist:
-			return_data = []
-		return HttpResponse(json.dumps(return_data), content_type = "application/json")
 
 
 ############################### ver QR ###################################
@@ -578,15 +618,13 @@ def mostrarPromociones(request):
 def mostrarQR(request):
 	if request.method == 'POST':
 		received_data = json.loads(request.body.decode('utf-8'))
-
 		try: 
-			usuario = Usuario.objects.filter(username=str(received_data['usuario'])).get()
-			#viejo =  datetime.now() + timedelta(days=10)  
-			usuario.tiempo_qr = datetime.now(timezone.utc) + timedelta(minutes=5)
+			usuario = Usuario.objects.filter(username=str(received_data['correo'])).get()
+			#viejo =  datetime.now() + timedelta(days=10)  (minutes=5)
+			usuario.tiempo_qr = datetime.now(timezone.utc) + timedelta(days=5)
 			usuario.save()
 			return_data={
 				"tiempo":True,
-				"id": str(usuario.id),
 				"tiempo max": str(usuario.tiempo_qr)
 			}
 	
